@@ -9,6 +9,17 @@ const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', { expiresIn: '30d' });
 };
 
+const getCleanIp = (req) => {
+  let ip = req.headers['x-forwarded-for'] || req.ip || req.connection?.remoteAddress || '127.0.0.1';
+  if (ip.includes(',')) {
+    ip = ip.split(',')[0].trim();
+  }
+  if (ip === '::1' || ip === '::ffff:127.0.0.1') {
+    ip = '127.0.0.1';
+  }
+  return ip.slice(0, 45);
+};
+
 // Admin Login
 router.post('/admin/login', async (req, res) => {
   try {
@@ -43,17 +54,18 @@ router.post('/admin/login', async (req, res) => {
   }
 });
 
-// User Signup
 router.post('/signup', async (req, res) => {
   try {
     const { fullName, email, phoneNumber, password, gender, qualification, experience } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
+    const cleanIp = getCleanIp(req);
     
     // Check if user exists
     const { data: existingUser } = await supabase
       .from('users')
       .select('id')
-      .eq('email', email)
-      .single();
+      .eq('email', normalizedEmail)
+      .maybeSingle();
 
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
 
@@ -67,13 +79,13 @@ router.post('/signup', async (req, res) => {
       .insert([
         { 
           full_name: fullName, 
-          email, 
+          email: normalizedEmail, 
           phone_number: phoneNumber, 
           password: hashedPassword, 
           gender, 
           qualification, 
           experience,
-          last_ip: req.ip
+          last_ip: cleanIp
         }
       ])
       .select()
@@ -93,16 +105,17 @@ router.post('/signup', async (req, res) => {
   }
 });
 
-// User Login
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
+    const cleanIp = getCleanIp(req);
     
     const { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
-      .single();
+      .eq('email', normalizedEmail)
+      .maybeSingle();
 
     const isMatch = user && (await bcrypt.compare(password, user.password));
 
@@ -111,8 +124,8 @@ router.post('/login', async (req, res) => {
       .from('login_details')
       .insert([
         {
-          email,
-          ip_address: req.ip,
+          email: normalizedEmail,
+          ip_address: cleanIp,
           status: isMatch ? 'Success' : 'Failed',
           user_agent: req.headers['user-agent']
         }
@@ -122,7 +135,7 @@ router.post('/login', async (req, res) => {
       // Update last IP
       await supabase
         .from('users')
-        .update({ last_ip: req.ip })
+        .update({ last_ip: cleanIp })
         .eq('id', user.id);
 
       res.json({ 
@@ -140,16 +153,17 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Google Login / Signup
 router.post('/google-login', async (req, res) => {
   try {
     const { email, fullName } = req.body;
+    const normalizedEmail = email.toLowerCase().trim();
+    const cleanIp = getCleanIp(req);
     
     // Check if user exists
     let { data: user, error } = await supabase
       .from('users')
       .select('*')
-      .eq('email', email)
+      .eq('email', normalizedEmail)
       .maybeSingle();
 
     if (!user) {
@@ -162,13 +176,13 @@ router.post('/google-login', async (req, res) => {
         .insert([
           { 
             full_name: fullName, 
-            email, 
+            email: normalizedEmail, 
             phone_number: 'N/A', 
             password: hashedPassword, 
             gender: 'other', 
             qualification: 'N/A', 
             experience: 'Google Authorized User',
-            last_ip: req.ip
+            last_ip: cleanIp
           }
         ])
         .select()
@@ -180,7 +194,7 @@ router.post('/google-login', async (req, res) => {
       // Update last IP
       await supabase
         .from('users')
-        .update({ last_ip: req.ip })
+        .update({ last_ip: cleanIp })
         .eq('id', user.id);
     }
 
@@ -189,8 +203,8 @@ router.post('/google-login', async (req, res) => {
       .from('login_details')
       .insert([
         {
-          email,
-          ip_address: req.ip,
+          email: normalizedEmail,
+          ip_address: cleanIp,
           status: 'Success',
           user_agent: req.headers['user-agent']
         }

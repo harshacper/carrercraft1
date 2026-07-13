@@ -45,13 +45,13 @@ const Chatbot = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 h-[85vh] flex flex-col">
-      <div className="text-center mb-6">
-        <h1 className="text-3xl font-bold text-darkGreen">Career Advisor AI</h1>
-        <p className="text-gray-600">Get personalized advice, resume tips, and interview prep.</p>
+    <div className="max-w-4xl mx-auto p-4 sm:p-6 min-h-[550px] h-[75vh] md:h-[85vh] flex flex-col">
+      <div className="text-center mb-4 sm:mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-darkGreen">Career Advisor AI</h1>
+        <p className="text-gray-600 text-xs sm:text-sm">Get personalized advice, resume tips, and interview prep.</p>
       </div>
 
-      <div className="flex-grow glassmorphism rounded-2xl overflow-hidden flex flex-col shadow-xl border border-white/40">
+      <div className="flex-grow glassmorphism rounded-2xl overflow-hidden flex flex-col shadow-xl border border-white/40 min-h-0">
         <div className="flex-grow overflow-y-auto p-6 space-y-6">
           {messages.map((msg, idx) => (
             <motion.div 

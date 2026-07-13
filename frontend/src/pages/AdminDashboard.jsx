@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
+import safeStorage from '../utils/safeStorage';
 import { LogOut, Users, Mail, Phone, Calendar, Briefcase, ShieldCheck, Activity } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -10,7 +11,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isAdmin = localStorage.getItem('adminToken') === 'admin_authenticated';
+    const isAdmin = safeStorage.getItem('adminToken') === 'admin_authenticated';
     if (!isAdmin) {
       navigate('/admin/login');
       return;
@@ -33,52 +34,52 @@ const AdminDashboard = () => {
   }, [navigate, activeTab]);
 
   const handleLogout = () => {
-    localStorage.removeItem('adminToken');
+    safeStorage.removeItem('adminToken');
     navigate('/admin/login');
   };
 
   if (loading) return <div className="p-20 text-center text-xl font-black text-darkGreen animate-pulse">Accessing Secure SQL Database...</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="min-h-screen bg-gray-50 p-4 sm:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-10 gap-6">
           <div>
-            <h1 className="text-4xl font-black text-gray-900 flex items-center gap-3">
-              <ShieldCheck className="text-darkGreen" size={40} /> Admin Control Center
+            <h1 className="text-3xl sm:text-4xl font-black text-gray-900 flex items-center gap-3">
+              <ShieldCheck className="text-darkGreen shrink-0" size={36} /> Admin Control Center
             </h1>
-            <p className="text-gray-600 mt-2 font-medium">Real-time surveillance of SQL user data and login activities.</p>
+            <p className="text-gray-600 mt-2 font-medium text-sm sm:text-base">Real-time surveillance of SQL user data and login activities.</p>
           </div>
-          <div className="flex gap-4">
-            <div className="bg-gray-200 p-1 rounded-2xl flex">
+          <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+            <div className="bg-gray-200 p-1 rounded-2xl flex overflow-x-auto max-w-full custom-scrollbar whitespace-nowrap shrink-0">
               <button 
                 onClick={() => setActiveTab('users')}
-                className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'users' ? 'bg-white shadow-md text-darkGreen' : 'text-gray-500'}`}
+                className={`px-4 sm:px-6 py-2 rounded-xl font-bold transition-all text-xs sm:text-sm cursor-pointer ${activeTab === 'users' ? 'bg-white shadow-md text-darkGreen' : 'text-gray-500'}`}
               >
                 Users
               </button>
               <button 
                 onClick={() => setActiveTab('logs')}
-                className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'logs' ? 'bg-white shadow-md text-darkGreen' : 'text-gray-500'}`}
+                className={`px-4 sm:px-6 py-2 rounded-xl font-bold transition-all text-xs sm:text-sm cursor-pointer ${activeTab === 'logs' ? 'bg-white shadow-md text-darkGreen' : 'text-gray-500'}`}
               >
                 Login Logs
               </button>
               <button 
                 onClick={() => setActiveTab('skillgap')}
-                className={`px-6 py-2 rounded-xl font-bold transition-all ${activeTab === 'skillgap' ? 'bg-white shadow-md text-darkGreen' : 'text-gray-500'}`}
+                className={`px-4 sm:px-6 py-2 rounded-xl font-bold transition-all text-xs sm:text-sm cursor-pointer ${activeTab === 'skillgap' ? 'bg-white shadow-md text-darkGreen' : 'text-gray-500'}`}
               >
                 Skill Gap Logs
               </button>
             </div>
-            <button onClick={handleLogout} className="bg-red-500 text-white px-6 py-2 rounded-2xl font-bold flex items-center gap-2 hover:bg-red-600 transition-all shadow-lg">
+            <button onClick={handleLogout} className="bg-red-500 text-white px-6 py-2 rounded-2xl font-bold flex items-center justify-center gap-2 hover:bg-red-600 transition-all shadow-lg cursor-pointer">
               <LogOut size={20} /> Logout
             </button>
           </div>
         </div>
 
         {/* Content Table */}
-        <div className="overflow-x-auto bg-white rounded-[32px] shadow-2xl border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto bg-white rounded-[24px] sm:rounded-[32px] shadow-2xl border border-gray-100 overflow-hidden">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-darkGreen text-white">

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Check, ShieldCheck, CreditCard, QrCode, Building, Loader2, Sparkles, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../utils/api';
+import safeStorage from '../utils/safeStorage';
 
 const Payment = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const Payment = () => {
   const [paymentMethod, setPaymentMethod] = useState('upi'); // 'upi' | 'card' | 'netbanking'
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [processing, setProcessing] = useState(false);
-  const [step, setStep] = useState(1); // 1: Method selection, 2: Loading, 3: Success
+  const [step, setStep] = useState(1); // 1: Method selection, 2: UPI UTR entry, 3: Loading, 4: Success
 
   // Form Fields
   const [upiId, setUpiId] = useState('');
@@ -23,15 +24,16 @@ const Payment = () => {
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [selectedBank, setSelectedBank] = useState('');
+  const [utr, setUtr] = useState('');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = safeStorage.getItem('token');
     if (!token) {
       setIsAuthenticated(false);
       setLoading(false);
     } else {
       setIsAuthenticated(true);
-      const storedUser = localStorage.getItem('user');
+      const storedUser = safeStorage.getItem('user');
       if (storedUser) {
         setCurrentUser(JSON.parse(storedUser));
       }
@@ -59,6 +61,7 @@ const Payment = () => {
     setSelectedPlan(plan);
     setIsCheckoutOpen(true);
     setStep(1);
+    setUtr('');
   };
 
   const formatCardNumber = (value) => {
@@ -80,20 +83,32 @@ const Payment = () => {
 
   const handlePay = (e) => {
     e.preventDefault();
-    if (paymentMethod === 'upi' && !upiId && step === 1) {
-      // Allow QR pay too, so no strict validation if they scan QR
+    if (paymentMethod === 'upi') {
+      setStep(2); // Go to UPI instructions and UTR verification step
+    } else {
+      processPayment();
     }
-    
-    setStep(2);
+  };
+
+  const handleUpiSubmit = (e) => {
+    e.preventDefault();
+    if (!utr || utr.length !== 12 || !/^\d+$/.test(utr)) {
+      alert('Please enter a valid 12-digit UPI UTR / Transaction ID.');
+      return;
+    }
+    processPayment();
+  };
+
+  const processPayment = () => {
+    setStep(3); // Show processing loading spinner
     setProcessing(true);
 
     // Simulate multi-stage secure checkout loading
     setTimeout(() => {
-      // Mock API call to update status
       api.post('/payment/checkout', { planType: selectedPlan })
         .then((res) => {
           setUserStatus(res.data.status);
-          setStep(3);
+          setStep(4); // Success screen
           setProcessing(false);
         })
         .catch((err) => {
@@ -114,35 +129,35 @@ const Payment = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-16 text-gray-900">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-16 text-gray-900">
       {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <span className="text-darkGreen bg-green-50 px-4 py-1.5 rounded-full text-sm font-bold tracking-wider uppercase mb-4 inline-block">Pricing Plans</span>
-        <h1 className="text-5xl font-black tracking-tight text-gray-900 mb-6">
+      <div className="text-center max-w-3xl mx-auto mb-12 sm:mb-16">
+        <span className="text-darkGreen bg-green-50 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-wider uppercase mb-4 inline-block">Pricing Plans</span>
+        <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-gray-900 mb-6">
           Invest in Your Career with <span className="bg-gradient-to-r from-darkGreen to-[#1f83c6] bg-clip-text text-transparent">Premium Access</span>
         </h1>
-        <p className="text-lg text-gray-600">
+        <p className="text-base sm:text-lg text-gray-600">
           Unlock unlimited resume designs, dynamic ATS feedback, and cover letter analysis tailored to top product & service companies.
         </p>
       </div>
 
       {/* User Plan Status */}
       {isAuthenticated && (
-        <div className="max-w-3xl mx-auto mb-12 bg-white/70 backdrop-blur-md border border-gray-100 p-6 rounded-2xl flex items-center justify-between shadow-sm">
+        <div className="max-w-3xl mx-auto mb-12 bg-white/70 backdrop-blur-md border border-gray-100 p-4 sm:p-6 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between shadow-sm gap-4">
           <div>
             <h4 className="font-bold text-gray-700">Your Current Status</h4>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex flex-wrap items-center gap-2 mt-1">
               <span className={`px-3 py-1 rounded-full text-xs font-black uppercase ${userStatus.subscription === 'monthly' ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-gray-100 text-gray-700'}`}>
                 {userStatus.subscription === 'monthly' ? 'Monthly Pro' : 'Free Tier'}
               </span>
               <span className="text-sm text-gray-500 font-semibold">•</span>
-              <span className="text-sm text-gray-600 font-semibold">
+              <span className="text-xs sm:text-sm text-gray-600 font-semibold">
                 Single Resume Credits: <strong className="text-darkGreen">{userStatus.credits}</strong>
               </span>
             </div>
           </div>
           {userStatus.subscription === 'monthly' && (
-            <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-sm">
+            <div className="flex items-center gap-1.5 text-emerald-600 font-bold text-sm shrink-0">
               <ShieldCheck className="w-5 h-5" /> Unlimited Downloads Active
             </div>
           )}
@@ -150,7 +165,7 @@ const Payment = () => {
       )}
 
       {/* Pricing Cards */}
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
         {/* Tier 1: Single Download */}
         <div className="p-8 bg-white border-2 border-gray-100 rounded-3xl flex flex-col justify-between hover:shadow-xl transition-all duration-300 relative group overflow-hidden shadow-sm">
           <div className="absolute top-0 right-0 w-24 h-24 bg-gray-50 rounded-bl-full -z-10 group-hover:scale-110 transition-transform"></div>
@@ -246,12 +261,12 @@ const Payment = () => {
       {/* Checkout Gateway Modal */}
       <AnimatePresence>
         {isCheckoutOpen && (
-          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-gray-100 flex flex-col"
+              className="bg-white rounded-3xl w-full max-w-md shadow-2xl border border-gray-100 flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar"
             >
               {/* Header */}
               <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
@@ -317,33 +332,17 @@ const Payment = () => {
                   <form onSubmit={handlePay} className="space-y-4">
                     {paymentMethod === 'upi' && (
                       <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} className="space-y-4">
-                        {/* Real UPI QR code using qrserver */}
-                        <div className="flex flex-col items-center p-4 bg-gray-50 border border-gray-100 rounded-2xl">
-                          <div className="w-40 h-40 bg-white p-2 border border-gray-200 rounded-xl relative flex items-center justify-center shadow-inner overflow-hidden">
-                            <img 
-                              src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
-                                `upi://pay?pa=9380268436-a19a@ybl&pn=CareerSteps&am=${selectedPlan === 'single' ? '50' : '150'}&cu=INR`
-                              )}`} 
-                              alt="Scan to Pay" 
-                              className="w-full h-full object-contain"
-                            />
-                            <div className="absolute inset-0 flex items-center justify-center bg-white/90 backdrop-blur-[1px] opacity-0 hover:opacity-100 transition-opacity">
-                              <span className="text-[10px] font-black text-darkGreen px-2 py-1 bg-green-50 rounded border border-green-200">SCAN TO PAY</span>
-                            </div>
-                          </div>
-                          <span className="text-[10px] text-gray-400 mt-2 font-semibold uppercase tracking-wider">Scan using GPay, PhonePe, or Paytm</span>
-                        </div>
-
                         <div>
-                          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Or Enter Your UPI ID</label>
+                          <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Enter Your UPI ID or Phone Number</label>
                           <input 
                             required
                             type="text"
                             value={upiId}
                             onChange={(e) => setUpiId(e.target.value)}
-                            placeholder="username@okaxis"
+                            placeholder="e.g. 9876543210@ybl or username@okaxis"
                             className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-darkGreen text-sm"
                           />
+                          <p className="text-[10px] text-gray-400 mt-1">We will send a mock collect request to this address.</p>
                         </div>
                       </motion.div>
                     )}
@@ -434,8 +433,70 @@ const Payment = () => {
                 </div>
               )}
 
-              {/* Step 2: Processing state */}
+              {/* Step 2: UPI Payment instructions & UTR verification */}
               {step === 2 && (
+                <div className="p-6 space-y-4">
+                  <div className="text-center">
+                    <span className="text-darkGreen bg-green-50 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">UPI Collect Request Sent</span>
+                    <h4 className="font-black text-gray-800 mt-2">Complete Your Payment</h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      A mock collect request has been sent to <strong className="text-darkGreen">{upiId}</strong>. Please check your UPI App to pay.
+                    </p>
+                  </div>
+
+                  {/* QR Code fallback */}
+                  <div className="flex flex-col items-center p-4 bg-gray-50 border border-gray-100 rounded-2xl">
+                    <span className="text-[10px] text-gray-400 mb-2 font-semibold uppercase tracking-wider">Or scan QR to pay: ₹{selectedPlan === 'single' ? '50' : '150'}</span>
+                    <div className="w-40 h-40 bg-white p-2 border border-gray-200 rounded-xl relative flex items-center justify-center shadow-inner overflow-hidden">
+                      <img 
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                          `upi://pay?pa=9380268436-a19a@ybl&pn=CareerSteps&am=${selectedPlan === 'single' ? '50' : '150'}&cu=INR`
+                        )}`} 
+                        alt="Scan to Pay" 
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <span className="text-[10px] text-darkGreen font-bold mt-2">UPI ID: 9380268436-a19a@ybl</span>
+                  </div>
+
+                  <form onSubmit={handleUpiSubmit} className="space-y-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-gray-500 uppercase mb-1">Enter 12-Digit UTR / Transaction ID</label>
+                      <input 
+                        required
+                        type="text"
+                        maxLength="12"
+                        minLength="12"
+                        pattern="\d{12}"
+                        value={utr}
+                        onChange={(e) => setUtr(e.target.value.replace(/\D/g, ''))}
+                        placeholder="e.g. 123456789012"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 outline-none focus:border-darkGreen text-sm text-center font-mono tracking-widest"
+                      />
+                      <p className="text-[10px] text-gray-400 mt-1 text-center">Open your transaction details in your UPI App to find the 12-digit Ref No. / UTR.</p>
+                    </div>
+
+                    <div className="flex gap-2.5 pt-2">
+                      <button 
+                        type="button"
+                        onClick={() => setStep(1)}
+                        className="w-1/3 border border-gray-200 text-gray-500 py-3.5 rounded-xl font-bold hover:bg-gray-50 transition-all duration-300 text-sm"
+                      >
+                        Back
+                      </button>
+                      <button 
+                        type="submit"
+                        className="w-2/3 bg-darkGreen text-white py-3.5 rounded-xl font-black hover:shadow-lg hover:shadow-green-100 transition-all duration-300 text-sm"
+                      >
+                        Confirm & Verify
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* Step 3: Processing state */}
+              {step === 3 && (
                 <div className="p-12 flex flex-col items-center justify-center text-center">
                   <div className="relative mb-6">
                     <Loader2 className="w-16 h-16 animate-spin text-darkGreen" />
@@ -448,8 +509,8 @@ const Payment = () => {
                 </div>
               )}
 
-              {/* Step 3: Success Screen */}
-              {step === 3 && (
+              {/* Step 4: Success Screen */}
+              {step === 4 && (
                 <div className="p-8 flex flex-col items-center justify-center text-center">
                   <motion.div 
                     initial={{ scale: 0.8, opacity: 0 }}

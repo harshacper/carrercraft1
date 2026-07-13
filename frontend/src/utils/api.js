@@ -1,4 +1,5 @@
 import axios from 'axios';
+import safeStorage from './safeStorage';
 
 const api = axios.create({
   baseURL: '/_/backend/api',
@@ -6,7 +7,7 @@ const api = axios.create({
 
 // Add interceptor to include token in headers
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = safeStorage.getItem('token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }

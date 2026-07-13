@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { LogOut, User, FileText, CheckCircle, TrendingUp, BookOpen, ChevronRight, CreditCard, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 import api from '../utils/api';
+import safeStorage from '../utils/safeStorage';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -11,11 +12,11 @@ const Dashboard = () => {
 
   useEffect(() => {
     // Mock user retrieval
-    const token = localStorage.getItem('token');
+    const token = safeStorage.getItem('token');
     if (!token) {
       navigate('/login');
     } else {
-      const storedUser = localStorage.getItem('user');
+      const storedUser = safeStorage.getItem('user');
       if (storedUser) {
         setUser(JSON.parse(storedUser));
       } else {
@@ -33,26 +34,26 @@ const Dashboard = () => {
   }, [navigate]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    safeStorage.removeItem('token');
     navigate('/login');
   };
 
   if (!user) return <div className="p-8 text-center">Loading...</div>;
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="flex justify-between items-end mb-10 border-b border-gray-200 pb-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-10 border-b border-gray-200 pb-6 gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900">Welcome, {user.fullName}</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">Welcome, {user.fullName}</h1>
           <p className="text-gray-600 mt-2">Here's your career progress snapshot.</p>
         </div>
-        <button onClick={handleLogout} className="text-red-500 hover:text-red-700 flex items-center gap-2 font-medium">
+        <button onClick={handleLogout} className="text-red-500 hover:text-red-700 flex items-center gap-2 font-medium cursor-pointer shrink-0">
           <LogOut size={20} /> Logout
         </button>
       </div>
 
       <div className="max-w-2xl mx-auto">
-        <div className="glassmorphism p-8">
+        <div className="glassmorphism p-5 sm:p-8">
           <h2 className="text-2xl font-bold mb-6 flex items-center gap-2"><User /> Profile Details</h2>
           <div className="space-y-4">
             <div className="flex justify-between py-2 border-b border-gray-100">

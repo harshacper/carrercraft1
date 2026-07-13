@@ -4,8 +4,8 @@ import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
-    <footer className="bg-black text-white py-16 px-6 mt-20">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
+    <footer className="bg-black text-white py-10 md:py-16 px-4 md:px-6 mt-20">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 md:gap-12">
         {/* Brand Section */}
         <div className="col-span-1 md:col-span-1">
           <Link to="/" className="text-2xl font-bold flex items-center gap-2 mb-6">
@@ -60,9 +60,9 @@ const Footer = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto border-t border-white/10 mt-16 pt-8 flex flex-col md:row justify-between items-center text-gray-500 text-sm font-bold">
+      <div className="max-w-7xl mx-auto border-t border-white/10 mt-12 md:mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm font-bold text-center gap-4">
         <p>© {new Date().getFullYear()} AI Career Navigator. All rights reserved.</p>
-        <div className="flex gap-8 mt-4 md:mt-0 uppercase tracking-widest">
+        <div className="flex gap-8 uppercase tracking-widest">
           <a href="#" className="hover:text-white transition-colors text-[10px]">Privacy Policy</a>
           <a href="#" className="hover:text-white transition-colors text-[10px]">Terms of Service</a>
         </div>

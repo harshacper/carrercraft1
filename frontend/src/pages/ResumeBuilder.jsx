@@ -7,6 +7,88 @@ import ResumeTemplate from '../components/ResumeTemplate';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 
+const defaultResumeData = {
+  name: "Ashish Pratap Singh",
+  contact: {
+    email: "xxx@gmail.com",
+    phone: "XXX-XXX-XXX",
+    github: "github.com/ashishps1",
+    linkedin: "linkedin.com/in/ashishps1"
+  },
+  skills: [
+    "Languages: C/C++, Java, Python, JavaScript, TypeScript, SQL",
+    "Technologies & Tools: AWS, EC2, DynamoDB, S3, SQS, Lambda, Athena, Elasticsearch, Spark, Hive, Presto, Kubernetes, Docker, Splunk, Kafka, Spring, Angular, ReactJS"
+  ],
+  workHistory: [
+    {
+      company: "Adobe",
+      location: "Bangalore",
+      date: "Mar 2021 - Present",
+      role: "Computer Scientist",
+      points: [
+        "Led the migration of Hive and Presto jobs from Qubole to AWS EMR, enhancing availability and significantly reducing operational costs.",
+        "Reduced the cost involved in running custom reports service by more than 80% by devising an automated system that identified and disabled reports with no usage or empty data.",
+        "Led a cost-saving initiative by identifying unused AWS resources and establishing S3 bucket expiration policies, leading to an annual cost reduction exceeding $50,000 in AWS expenditures.",
+        "AWS, EC2, S3, EMR, Hive, Presto, Qubole, Kafka, Druid, Zookeeper, MySQL, Kubernetes, Docker, Bazel"
+      ]
+    },
+    {
+      company: "Amazon",
+      location: "Bangalore",
+      date: "Sept 2019 - Mar 2021",
+      role: "Software Development Engineer",
+      points: [
+        "Worked on migrating ML workflows to Native AWS, enabling automated scalability based on workload demands and improving the logging and troubleshooting capabilities.",
+        "Developed a customized batch workflow plugin for an external team to help them save upto $6MM in human labelling cost for their ML experiments. This was achieved by auto labelling high confidence records using our ML models.",
+        "Java, Python, TypeScript, AWS Step Functions, AWS Batch, Lambda, S3, DynamoDB, EC2, SQS, SNS, AWS CDK, AWS Athena, Elasticsearch, LightGBM, TensorFlow"
+      ]
+    },
+    {
+      company: "Morgan Stanley",
+      location: "Bangalore",
+      date: "Aug 2017 - Aug 2019",
+      role: "Technology Associate",
+      points: [
+        "Built a visualization tool to group contextually related infrastructure alerts (issues) to reduce the Mean Time to Resolution. Modeled the infrastructure dependencies as a graph problem and used graph algorithms like BFS, Union-Find to show the visualization and identify the root cause for a bunch of alerts.",
+        "Developed a Machine Learning powered solution to predict the likelihood of a production deployment resulting in an emergency reversion.",
+        "Python, Flask, ReactJS, Redux, Angular, d3, Kafka, DB2, scikit-learn"
+      ]
+    }
+  ],
+  education: [
+    {
+      school: "BITS Hyderabad",
+      date: "2016-2026",
+      degree: "B.E. in Computer Science and Engineering",
+      location: "Hyderabad",
+      grade: "CGPA: 7.96/10",
+      coursework: "Object Oriented Programming, Databases, Discrete Maths, Data Structures and Algorithms, Operating Systems, Computer Networks, Machine Learning, Data Mining, Advance Data Structures and Algorithms, Information Retrieval, Image Processing"
+    }
+  ],
+  projects: [
+    {
+      name: "Word Lookup Dictionary",
+      date: "2015",
+      description: "Developed a desktop software for online lookup of English words. Implemented efficient search of valid words using Trie data structure. Implemented spelling correction and auto-suggestion using edit distance algorithm. Used web scraping to get the data for online lookup. Python, BeautifulSoup."
+    },
+    {
+      name: "Alternative-Routes in Road Networks",
+      date: "2016",
+      description: "Applied Dijkstra's shortest path algorithm to find the route which takes the shortest time to travel from source to destination in a given road network with randomly generated traffic. Implemented methods to avoid collisions between vehicles by dynamically changing their speeds. Used C++ and OpenGL library for simulation. C++, OpenGL."
+    },
+    {
+      name: "Clustering SSH Attacks",
+      date: "2016",
+      description: "Applied KMeans clustering algorithm to segregate different kind of attacks during a Secure Shell (SSH) session by making use of network packet files(pcap). It involved finding the best value of K and grouping the similar files on the basis of cluster assignments. Java, WEKA."
+    }
+  ],
+  awards: [
+    "Mentor at Scaler Academy: Helping students and working professionals to get better at problem solving, coding and system design",
+    "Data Engineering Nanodegree on Udacity",
+    "Machine Learning and Deep Learning Specialization on Coursera"
+  ]
+};
+
 const ResumeBuilder = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('analyzer'); // analyzer | builder
@@ -19,6 +101,15 @@ const ResumeBuilder = () => {
       api.get('/payment/status')
         .then(res => setUserStatus(res.data))
         .catch(err => console.error("Error loading subscription status:", err));
+    }
+
+    // Parse company parameter from URL search query
+    const params = new URLSearchParams(window.location.search);
+    const companyParam = params.get('company');
+    if (companyParam) {
+      setUserDetails(prev => ({ ...prev, targetCompany: decodeURIComponent(companyParam) }));
+      setActiveTab('builder');
+      setExpandedSection('basics');
     }
   }, []);
   const [file, setFile] = useState(null);
@@ -39,10 +130,17 @@ const ResumeBuilder = () => {
     phone: '',
     address: '',
     linkedin: '',
+    github: '',
     degree: '',
     school: '',
     eduDate: '',
-    eduLocation: ''
+    eduLocation: '',
+    cgpa: '',
+    coursework: '',
+    projects: '',
+    awards: '',
+    targetCompany: '',
+    jd: ''
   });
 
   const [expandedSection, setExpandedSection] = useState('basics'); // basics | contact | education
@@ -99,17 +197,29 @@ const ResumeBuilder = () => {
         "name": "...",
         "summary": "...",
         "targetRole": "...",
-        "contact": { "address": "...", "phone": "...", "email": "...", "linkedin": "..." },
+        "contact": { "address": "...", "phone": "...", "email": "...", "linkedin": "...", "github": "..." },
         "workHistory": [ { "date": "...", "role": "...", "company": "...", "location": "...", "points": ["...", "..."] } ],
-        "education": [ { "date": "...", "degree": "...", "school": "...", "location": "..." } ],
-        "skills": ["...", "..."]
+        "education": [ { "date": "...", "degree": "...", "school": "...", "location": "...", "coursework": "...", "grade": "..." } ],
+        "skills": ["...", "..."],
+        "projects": [ { "name": "...", "date": "...", "description": "..." } ],
+        "awards": ["...", "..."]
       }
       Candidate Info:
       Name: ${userDetails.name}
       Target Role: ${userDetails.role}
       Experience: ${userDetails.experience}
       Skills: ${userDetails.skills}
-      Provided Summary: ${userDetails.summary || "Generate one based on info."}`;
+      Provided Summary: ${userDetails.summary || "Generate one based on info."}
+      GitHub: ${userDetails.github || ""}
+      Education CGPA/Grade: ${userDetails.cgpa || ""}
+      Education Coursework: ${userDetails.coursework || ""}
+      Projects: ${userDetails.projects || ""}
+      Awards: ${userDetails.awards || ""}
+      
+      TAILORING EXPECTATIONS:
+      ${userDetails.targetCompany ? `- Customize this entire resume specifically for a job application at the company: ${userDetails.targetCompany}. Optimize the experience bullet points and target summary to align with their standard company values and tech stack.` : ''}
+      ${userDetails.jd ? `- Customize and align the resume's skills, summaries, and achievements to target this specific Job Description (JD):
+      ${userDetails.jd}` : ''}`;
 
       const res = await api.post('/chat', { 
         message: prompt,
@@ -124,7 +234,8 @@ const ResumeBuilder = () => {
         email: userDetails.email || parsedData.contact?.email || '',
         phone: userDetails.phone || parsedData.contact?.phone || '',
         address: userDetails.address || parsedData.contact?.address || '',
-        linkedin: userDetails.linkedin || parsedData.contact?.linkedin || ''
+        linkedin: userDetails.linkedin || parsedData.contact?.linkedin || '',
+        github: userDetails.github || parsedData.contact?.github || ''
       };
 
       if (userDetails.degree || userDetails.school) {
@@ -132,8 +243,18 @@ const ResumeBuilder = () => {
           degree: userDetails.degree || parsedData.education?.[0]?.degree || '',
           school: userDetails.school || parsedData.education?.[0]?.school || '',
           date: userDetails.eduDate || parsedData.education?.[0]?.date || '',
-          location: userDetails.eduLocation || parsedData.education?.[0]?.location || ''
+          location: userDetails.eduLocation || parsedData.education?.[0]?.location || '',
+          grade: userDetails.cgpa || parsedData.education?.[0]?.grade || '',
+          coursework: userDetails.coursework || parsedData.education?.[0]?.coursework || ''
         }];
+      }
+
+      // Populate projects and awards if not returned correctly by AI, or fallback
+      if (!parsedData.projects) {
+        parsedData.projects = [];
+      }
+      if (!parsedData.awards) {
+        parsedData.awards = [];
       }
 
       setGeneratedData(parsedData);
@@ -272,10 +393,18 @@ const ResumeBuilder = () => {
                        <label className="block text-xs font-bold text-gray-700 mb-1">Full Name</label>
                        <input required value={userDetails.name} onChange={e => setUserDetails({...userDetails, name: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="John Doe" />
                      </div>
-                     <div>
-                       <label className="block text-xs font-bold text-gray-700 mb-1">Target Role</label>
-                       <input required value={userDetails.role} onChange={e => setUserDetails({...userDetails, role: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="IT Specialist" />
-                     </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Target Role</label>
+                        <input required value={userDetails.role} onChange={e => setUserDetails({...userDetails, role: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="IT Specialist" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Target Company (Optional)</label>
+                        <input value={userDetails.targetCompany} onChange={e => setUserDetails({...userDetails, targetCompany: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="e.g. Google" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Target Job Description (JD) / Requirements (Optional)</label>
+                        <textarea value={userDetails.jd} onChange={e => setUserDetails({...userDetails, jd: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen h-20 text-sm" placeholder="Paste the job description or role requirements here..." />
+                      </div>
                      <div>
                        <label className="block text-xs font-bold text-gray-700 mb-1">Key Skills</label>
                        <textarea required value={userDetails.skills} onChange={e => setUserDetails({...userDetails, skills: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen h-20 text-sm" placeholder="Cybersecurity, Data Analysis..." />
@@ -317,9 +446,13 @@ const ResumeBuilder = () => {
                        <input value={userDetails.address} onChange={e => setUserDetails({...userDetails, address: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="Denver, CO" />
                      </div>
                      <div className="col-span-2">
-                       <label className="block text-xs font-bold text-gray-700 mb-1">LinkedIn Profile</label>
-                       <input value={userDetails.linkedin} onChange={e => setUserDetails({...userDetails, linkedin: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="linkedin.com/in/johndoe" />
-                     </div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">LinkedIn Profile</label>
+                        <input value={userDetails.linkedin} onChange={e => setUserDetails({...userDetails, linkedin: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="linkedin.com/in/johndoe" />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs font-bold text-gray-700 mb-1">GitHub Profile</label>
+                        <input value={userDetails.github} onChange={e => setUserDetails({...userDetails, github: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="github.com/johndoe" />
+                      </div>
                    </div>
                  )}
                </div>
@@ -339,17 +472,51 @@ const ResumeBuilder = () => {
                        <label className="block text-xs font-bold text-gray-700 mb-1">University / School</label>
                        <input value={userDetails.school} onChange={e => setUserDetails({...userDetails, school: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="University of Chicago" />
                      </div>
-                     <div>
-                       <label className="block text-xs font-bold text-gray-700 mb-1">Date</label>
-                       <input value={userDetails.eduDate} onChange={e => setUserDetails({...userDetails, eduDate: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="2016 - 2020" />
-                     </div>
-                     <div>
-                       <label className="block text-xs font-bold text-gray-700 mb-1">Location</label>
-                       <input value={userDetails.eduLocation} onChange={e => setUserDetails({...userDetails, eduLocation: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="Chicago, IL" />
-                     </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Date Range</label>
+                        <input value={userDetails.eduDate} onChange={e => setUserDetails({...userDetails, eduDate: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="e.g. 2016-2026" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Location</label>
+                        <input value={userDetails.eduLocation} onChange={e => setUserDetails({...userDetails, eduLocation: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="Chicago, IL" />
+                      </div>
+                      <div className="col-span-2">
+                        <label className="block text-xs font-bold text-gray-700 mb-1">CGPA / Grade</label>
+                        <input value={userDetails.cgpa} onChange={e => setUserDetails({...userDetails, cgpa: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen text-sm" placeholder="e.g. CGPA: 7.96/10" />
+                      </div>
+                     <div className="col-span-2">
+                        <label className="block text-xs font-bold text-gray-700 mb-1">Relevant Coursework</label>
+                        <textarea value={userDetails.coursework} onChange={e => setUserDetails({...userDetails, coursework: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen h-16 text-sm" placeholder="Data Structures, Algorithms..." />
+                      </div>
                    </div>
                  )}
                </div>
+
+                {/* Project Work */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <button type="button" onClick={() => setExpandedSection('projects')} className="w-full bg-gray-50 p-4 font-bold text-left flex justify-between items-center text-gray-800">
+                    Project Work {expandedSection === 'projects' ? <ChevronUp size={18}/> : <ChevronDown size={18}/>}
+                  </button>
+                  {expandedSection === 'projects' && (
+                    <div className="p-4 space-y-4 bg-white">
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Projects Description</label>
+                      <textarea value={userDetails.projects} onChange={e => setUserDetails({...userDetails, projects: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen h-32 text-sm" placeholder="Project Name (Date): Description..." />
+                    </div>
+                  )}
+                </div>
+
+                {/* Awards and Certificates */}
+                <div className="border border-gray-200 rounded-xl overflow-hidden">
+                  <button type="button" onClick={() => setExpandedSection('awards')} className="w-full bg-gray-50 p-4 font-bold text-left flex justify-between items-center text-gray-800">
+                    Awards & Certificates {expandedSection === 'awards' ? <ChevronUp size={18}/> : <ChevronDown size={18}/>}
+                  </button>
+                  {expandedSection === 'awards' && (
+                    <div className="p-4 space-y-4 bg-white">
+                      <label className="block text-xs font-bold text-gray-700 mb-1">Awards List (one per line)</label>
+                      <textarea value={userDetails.awards} onChange={e => setUserDetails({...userDetails, awards: e.target.value})} className="w-full px-3 py-2 rounded-lg border border-gray-200 outline-none focus:border-darkGreen h-24 text-sm" placeholder="Award Name: Details..." />
+                    </div>
+                  )}
+                </div>
 
                <button type="submit" disabled={generating} className="w-full bg-darkGreen text-white py-4 rounded-xl font-black hover:shadow-lg transition-all flex justify-center items-center gap-2 mt-4">
                  {generating ? <Loader2 className="animate-spin" /> : 'Generate Live Preview'}

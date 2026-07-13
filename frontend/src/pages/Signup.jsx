@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 import api from '../utils/api';
+import safeStorage from '../utils/safeStorage';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -23,12 +24,13 @@ const Signup = () => {
     }
     try {
       const { confirmPassword, ...signupData } = formData;
+      signupData.email = signupData.email.toLowerCase().trim();
       const res = await api.post('/auth/signup', signupData);
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data));
+      safeStorage.setItem('token', res.data.token);
+      safeStorage.setItem('user', JSON.stringify(res.data));
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Signup failed');
+      setError(err.response?.data?.message || err.message || 'Signup failed');
     }
   };
 
@@ -37,64 +39,73 @@ const Signup = () => {
     // Simulate brief authorization delay
     setTimeout(async () => {
       try {
-        const res = await api.post('/auth/google-login', { email: selectedEmail, fullName: name });
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data));
+        const res = await api.post('/auth/google-login', { email: selectedEmail.toLowerCase().trim(), fullName: name });
+        safeStorage.setItem('token', res.data.token);
+        safeStorage.setItem('user', JSON.stringify(res.data));
         setIsGoogleModalOpen(false);
         setGoogleLoading(false);
         navigate('/dashboard');
       } catch (err) {
-        setError(err.response?.data?.message || 'Google Sign-In failed');
+        setError(err.response?.data?.message || err.message || 'Google Sign-In failed');
         setGoogleLoading(false);
       }
     }, 1200);
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12 relative">
-      <div className="glassmorphism w-full max-w-2xl p-8">
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-8 sm:py-12 relative">
+      <div className="glassmorphism w-full max-w-2xl p-5 sm:p-8">
         <h2 className="text-3xl font-bold text-center text-black mb-8">Create an Account</h2>
         {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm font-semibold border border-red-200">{error}</div>}
-        <form onSubmit={handleSignup} className="grid md:grid-cols-2 gap-6">
-          <div className="col-span-2 md:col-span-1">
+        <form onSubmit={handleSignup} className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-black mb-2">Full Name</label>
-            <input name="fullName" onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20" />
+            <input name="fullName" onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 text-sm" />
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-black mb-2">Email Address</label>
-            <input type="email" name="email" onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20" />
+            <input 
+              type="email" 
+              name="email" 
+              onChange={handleChange} 
+              required 
+              autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 text-sm" 
+            />
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-black mb-2">Phone Number</label>
-            <input name="phoneNumber" onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20" />
+            <input name="phoneNumber" onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 text-sm" />
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-black mb-2">Gender</label>
-            <select name="gender" onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 bg-white">
+            <select name="gender" onChange={handleChange} className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 bg-white text-sm">
               <option value="">Select Gender</option>
               <option value="male">Male</option>
               <option value="female">Female</option>
               <option value="other">Other</option>
             </select>
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-black mb-2">Qualification</label>
-            <input name="qualification" onChange={handleChange} placeholder="e.g. B.Tech" className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20" />
+            <input name="qualification" onChange={handleChange} placeholder="e.g. B.Tech" className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 text-sm" />
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-black mb-2">Job Experience</label>
-            <input name="experience" onChange={handleChange} placeholder="e.g. 2 Years as Software Engineer" className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20" />
+            <input name="experience" onChange={handleChange} placeholder="e.g. 2 Years as Software Engineer" className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 text-sm" />
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-black mb-2">Password</label>
-            <input type="password" name="password" onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20" />
+            <input type="password" name="password" onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 text-sm" />
           </div>
-          <div className="col-span-2 md:col-span-1">
+          <div className="col-span-1">
             <label className="block text-sm font-medium text-black mb-2">Confirm Password</label>
-            <input type="password" name="confirmPassword" onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20" />
+            <input type="password" name="confirmPassword" onChange={handleChange} required className="w-full px-4 py-3 rounded-lg border border-gray-200 outline-none focus:border-black focus:ring-2 focus:ring-black/20 text-sm" />
           </div>
-          <div className="col-span-2 mt-4">
-            <button type="submit" className="w-full bg-black text-white py-4 rounded-lg font-bold hover:bg-opacity-90 transition-all text-lg">
+          <div className="col-span-1 md:col-span-2 mt-4">
+            <button type="submit" className="w-full bg-black text-white py-3.5 rounded-lg font-bold hover:bg-opacity-90 transition-all text-base sm:text-lg cursor-pointer">
               Create Account
             </button>
           </div>
@@ -109,7 +120,7 @@ const Signup = () => {
         <button 
           type="button"
           onClick={() => setIsGoogleModalOpen(true)}
-          className="w-full bg-white text-gray-700 border border-gray-300 py-3.5 rounded-lg font-bold hover:bg-gray-50 hover:shadow-sm transition-all flex items-center justify-center gap-3"
+          className="w-full bg-white text-gray-700 border border-gray-300 py-3 rounded-lg font-bold hover:bg-gray-50 hover:shadow-sm transition-all flex items-center justify-center gap-3 cursor-pointer"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -120,15 +131,15 @@ const Signup = () => {
           Continue with Google
         </button>
 
-        <p className="mt-6 text-center text-black">
+        <p className="mt-6 text-center text-black text-sm">
           Already have an account? <Link to="/login" className="text-black font-semibold hover:underline">Log in</Link>
         </p>
       </div>
 
       {/* Google Account Picker Modal */}
       {isGoogleModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-gray-100 p-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl border border-gray-100 p-5 sm:p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="flex flex-col items-center mb-6">
               <svg viewBox="0 0 24 24" width="36" height="36" xmlns="http://www.w3.org/2000/svg" className="mb-3">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -157,6 +168,9 @@ const Signup = () => {
                   <input 
                     type="email" 
                     required
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
                     value={googleEmailInput}
                     onChange={e => setGoogleEmailInput(e.target.value)}
                     placeholder="Email or phone"
@@ -171,13 +185,13 @@ const Signup = () => {
                   <button 
                     type="button"
                     onClick={() => setIsGoogleModalOpen(false)}
-                    className="text-sm font-bold text-gray-500 hover:text-gray-700"
+                    className="text-sm font-bold text-gray-500 hover:text-gray-700 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
-                    className="px-5 py-2.5 bg-[#4285F4] text-white font-bold rounded-lg text-sm hover:bg-[#357ae8] transition-all shadow-sm"
+                    className="px-5 py-2.5 bg-[#4285F4] text-white font-bold rounded-lg text-sm hover:bg-[#357ae8] transition-all shadow-sm cursor-pointer"
                   >
                     Next
                   </button>

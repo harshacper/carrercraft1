@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, ExternalLink, PlayCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const MOCK_COMPANIES = [
   {
@@ -811,11 +812,11 @@ const Companies = () => {
   const filtered = MOCK_COMPANIES.filter(c => c.name.toLowerCase().includes(search.toLowerCase()) || c.industry.toLowerCase().includes(search.toLowerCase()));
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-12">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-12 gap-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 sm:mb-12 gap-6">
         <div>
-          <h1 className="text-4xl font-bold text-darkGreen">Top Companies Showcase</h1>
-          <p className="text-gray-600 mt-2">Discover and apply to top-tier organizations.</p>
+          <h1 className="text-3xl sm:text-4xl font-black text-darkGreen">Top Companies Showcase</h1>
+          <p className="text-gray-600 mt-2 text-sm sm:text-base">Discover and apply to top-tier organizations.</p>
         </div>
         <div className="relative w-full md:w-96">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -824,12 +825,12 @@ const Companies = () => {
             placeholder="Search companies or industries..." 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white rounded-full py-3 pl-12 pr-4 border border-gray-200 focus:border-darkGreen focus:ring-2 focus:ring-darkGreen/20 transition-all outline-none"
+            className="w-full bg-white rounded-full py-3 pl-12 pr-4 border border-gray-200 focus:border-darkGreen focus:ring-2 focus:ring-darkGreen/20 transition-all outline-none text-sm"
           />
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
         {filtered.map((company, idx) => (
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -858,9 +859,12 @@ const Companies = () => {
             </div>
             <p className="text-gray-600 mb-6 min-h-[48px]">{company.desc}</p>
             <div className="flex gap-3">
-              <a href={company.website} target="_blank" rel="noreferrer" className="w-full bg-darkGreen text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-opacity-90 transition-all">
-                Careers <ExternalLink size={16}/>
+              <a href={company.website} target="_blank" rel="noreferrer" className="w-1/2 bg-transparent border-2 border-darkGreen text-darkGreen py-2 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-darkGreen/5 transition-all text-sm text-center">
+                Careers <ExternalLink size={14}/>
               </a>
+              <Link to={`/resume?company=${encodeURIComponent(company.name)}`} className="w-1/2 bg-darkGreen text-white py-2 rounded-lg font-medium flex items-center justify-center gap-2 hover:bg-opacity-95 transition-all text-sm text-center">
+                Tailor Resume
+              </Link>
             </div>
           </motion.div>
         ))}

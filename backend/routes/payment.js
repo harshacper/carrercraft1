@@ -26,9 +26,34 @@ const protect = async (req, res, next) => {
 
 // Helper to parse subscription status from skills column
 const getUserPaymentState = (skillsText) => {
+  // If it's already an array (e.g. from Supabase JSONB or client list)
+  if (Array.isArray(skillsText)) {
+    return {
+      skillsList: skillsText,
+      subscription: 'none',
+      credits: 0
+    };
+  }
+
+  // If it's already an object (e.g. from Supabase JSONB)
+  if (skillsText && typeof skillsText === 'object') {
+    return {
+      skillsList: skillsText.skillsList || [],
+      subscription: skillsText.subscription || 'none',
+      credits: skillsText.credits || 0
+    };
+  }
+
   try {
     const parsed = JSON.parse(skillsText);
-    if (parsed && typeof parsed === 'object' && ('subscription' in parsed || 'credits' in parsed)) {
+    if (parsed && typeof parsed === 'object') {
+      if (Array.isArray(parsed)) {
+        return {
+          skillsList: parsed,
+          subscription: 'none',
+          credits: 0
+        };
+      }
       return {
         skillsList: parsed.skillsList || [],
         subscription: parsed.subscription || 'none',
@@ -40,7 +65,9 @@ const getUserPaymentState = (skillsText) => {
   }
 
   // Default fallback if skills is plain text or empty
-  const skillsArray = skillsText ? skillsText.split(',').map(s => s.trim()).filter(Boolean) : [];
+  const skillsArray = typeof skillsText === 'string'
+    ? skillsText.split(',').map(s => s.trim()).filter(Boolean)
+    : [];
   return {
     skillsList: skillsArray,
     subscription: 'none',
@@ -103,7 +130,7 @@ router.post('/checkout', protect, async (req, res) => {
     // Save state back to Supabase
     const { error: updateError } = await supabase
       .from('users')
-      .update({ skills: JSON.stringify(state) })
+      .update({ skills: state })
       .eq('id', req.user.id);
 
     if (updateError) {
@@ -147,7 +174,7 @@ router.post('/consume', protect, async (req, res) => {
     // Save state back to Supabase
     const { error: updateError } = await supabase
       .from('users')
-      .update({ skills: JSON.stringify(state) })
+      .update({ skills: state })
       .eq('id', req.user.id);
 
     if (updateError) {

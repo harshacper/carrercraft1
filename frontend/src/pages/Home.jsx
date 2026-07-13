@@ -8,39 +8,40 @@ const Home = () => {
   return (
     <div className="flex flex-col items-center">
       {/* Hero Section with Background Image */}
-      <section className="relative w-full h-[90vh] flex items-center justify-center overflow-hidden">
+      <section className="relative w-full min-h-[85vh] md:h-[90vh] py-16 md:py-0 flex items-center justify-center overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
           <img 
             src={heroImg} 
             alt="Career Hero" 
             className="w-full h-full object-cover object-center"
+            loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent"></div>
         </div>
 
-        <div className="relative z-10 w-full max-w-4xl mx-auto px-6 flex flex-col items-center text-center">
+        <div className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-6 flex flex-col items-center text-center">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             className="text-white flex flex-col items-center"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-sm font-bold mb-6">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs sm:text-sm font-bold mb-6">
               <Sparkles className="text-yellow-400 w-4 h-4" /> 
               <span>AI-Powered Career Intelligence</span>
             </div>
-            <h1 className="text-6xl lg:text-8xl font-black leading-tight mb-6 text-white">
+            <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black leading-tight mb-6 text-white">
               Scale Your <br/> <span>Future</span>
             </h1>
-            <p className="text-xl text-white/90 max-w-2xl mb-10 leading-relaxed font-medium">
+            <p className="text-lg sm:text-xl text-white/90 max-w-2xl mb-10 leading-relaxed font-medium">
               Navigate your career journey with an AI navigator. From resume analysis to skill gap roadmaps, we build your path to top-tier companies.
             </p>
-            <div className="flex flex-col sm:flex-row gap-5">
-              <Link to="/signup" className="bg-white text-black px-10 py-5 rounded-2xl font-black text-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row gap-4 sm:gap-5 w-full sm:w-auto px-4 sm:px-0">
+              <Link to="/signup" className="bg-white text-black px-6 py-4 sm:px-10 sm:py-5 rounded-2xl font-black text-lg sm:text-xl hover:shadow-2xl hover:scale-105 transition-all flex items-center justify-center gap-3">
                 Get Started Free <ArrowRight />
               </Link>
-              <Link to="/companies" className="bg-transparent border-2 border-white/30 backdrop-blur-md text-white px-10 py-5 rounded-2xl font-black text-xl hover:bg-white/10 transition-all">
+              <Link to="/companies" className="bg-transparent border-2 border-white/30 backdrop-blur-md text-white px-6 py-4 sm:px-10 sm:py-5 rounded-2xl font-black text-lg sm:text-xl hover:bg-white/10 transition-all flex items-center justify-center">
                 Explore 100+ Jobs
               </Link>
             </div>
@@ -49,21 +50,21 @@ const Home = () => {
       </section>
 
       {/* Trust Section */}
-      <section className="w-full bg-white py-20 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col items-center">
-          <p className="text-black font-black uppercase tracking-widest text-sm mb-12">Trusted by students at leading institutions</p>
-          <div className="flex flex-wrap justify-center items-center gap-16 opacity-100">
+      <section className="w-full bg-white py-16 md:py-20 px-4 md:px-6">
+        <div className="max-w-7xl mx-auto flex flex-col items-center text-center">
+          <p className="text-black font-black uppercase tracking-widest text-xs sm:text-sm mb-8 md:mb-12">Trusted by students at leading institutions</p>
+          <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-12 md:gap-16 opacity-100">
             {['Google', 'Microsoft', 'Amazon', 'Meta', 'Netflix'].map(brand => (
-              <span key={brand} className="text-4xl font-black tracking-tighter text-black">{brand}</span>
+              <span key={brand} className="text-2xl sm:text-4xl font-black tracking-tighter text-black">{brand}</span>
             ))}
           </div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="w-full bg-softGray py-32 px-6">
+      <section className="w-full bg-softGray py-16 md:py-32 px-4 md:px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
             {[
               { 
                 title: 'AI Resume Intelligence', 
@@ -84,12 +85,12 @@ const Home = () => {
               <motion.div 
                 whileHover={{ y: -10 }}
                 key={idx} 
-                className="p-10 rounded-[40px] bg-white border border-gray-100 shadow-xl hover:shadow-2xl transition-all"
+                className="p-6 sm:p-10 rounded-3xl sm:rounded-[40px] bg-white border border-gray-100 shadow-xl hover:shadow-2xl transition-all"
               >
                 <div className="w-16 h-16 bg-black text-white rounded-3xl flex items-center justify-center mb-8 shadow-lg shadow-black/20">
                   {feat.icon}
                 </div>
-                <h3 className="text-2xl font-black mb-4 text-black">{feat.title}</h3>
+                <h3 className="text-xl sm:text-2xl font-black mb-4 text-black">{feat.title}</h3>
                 <p className="text-black/70 leading-relaxed font-medium">{feat.desc}</p>
               </motion.div>
             ))}

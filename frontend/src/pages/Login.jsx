@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LogIn, Loader2 } from 'lucide-react';
 import api from '../utils/api';
+import safeStorage from '../utils/safeStorage';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -15,12 +16,12 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await api.post('/auth/login', { email, password });
-      localStorage.setItem('token', res.data.token);
-      localStorage.setItem('user', JSON.stringify(res.data));
+      const res = await api.post('/auth/login', { email: email.toLowerCase().trim(), password });
+      safeStorage.setItem('token', res.data.token);
+      safeStorage.setItem('user', JSON.stringify(res.data));
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || err.message || 'Login failed');
     }
   };
 
@@ -29,22 +30,22 @@ const Login = () => {
     // Simulate brief authorization delay
     setTimeout(async () => {
       try {
-        const res = await api.post('/auth/google-login', { email: selectedEmail, fullName: name });
-        localStorage.setItem('token', res.data.token);
-        localStorage.setItem('user', JSON.stringify(res.data));
+        const res = await api.post('/auth/google-login', { email: selectedEmail.toLowerCase().trim(), fullName: name });
+        safeStorage.setItem('token', res.data.token);
+        safeStorage.setItem('user', JSON.stringify(res.data));
         setIsGoogleModalOpen(false);
         setGoogleLoading(false);
         navigate('/dashboard');
       } catch (err) {
-        setError(err.response?.data?.message || 'Google Sign-In failed');
+        setError(err.response?.data?.message || err.message || 'Google Sign-In failed');
         setGoogleLoading(false);
       }
     }, 1200);
   };
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 relative">
-      <div className="glassmorphism w-full max-w-md p-8 shadow-xl">
+    <div className="min-h-[80vh] flex items-center justify-center px-4 py-8 relative">
+      <div className="glassmorphism w-full max-w-md p-5 sm:p-8 shadow-xl">
         <h2 className="text-3xl font-bold text-center text-black mb-8">Welcome Back</h2>
         {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm font-semibold border border-red-200">{error}</div>}
         <form onSubmit={handleLogin} className="space-y-6">
@@ -53,9 +54,12 @@ const Login = () => {
             <input 
               type="email" 
               required
+              autoComplete="email"
+              autoCapitalize="none"
+              autoCorrect="off"
               value={email}
               onChange={e => setEmail(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/20 outline-none transition-all"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/20 outline-none transition-all text-sm"
             />
           </div>
           <div>
@@ -65,10 +69,10 @@ const Login = () => {
               required
               value={password}
               onChange={e => setPassword(e.target.value)}
-              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/20 outline-none transition-all"
+              className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:border-black focus:ring-2 focus:ring-black/20 outline-none transition-all text-sm"
             />
           </div>
-          <button type="submit" className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2">
+          <button type="submit" className="w-full bg-black text-white py-3 rounded-lg font-bold hover:bg-opacity-90 transition-all flex items-center justify-center gap-2 cursor-pointer">
             <LogIn size={18} /> Sign In
           </button>
         </form>
@@ -82,7 +86,7 @@ const Login = () => {
         <button 
           type="button"
           onClick={() => setIsGoogleModalOpen(true)}
-          className="w-full bg-white text-gray-700 border border-gray-300 py-3 rounded-lg font-bold hover:bg-gray-50 hover:shadow-sm transition-all flex items-center justify-center gap-3"
+          className="w-full bg-white text-gray-700 border border-gray-300 py-3 rounded-lg font-bold hover:bg-gray-50 hover:shadow-sm transition-all flex items-center justify-center gap-3 cursor-pointer"
         >
           <svg viewBox="0 0 24 24" width="18" height="18" xmlns="http://www.w3.org/2000/svg">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -93,15 +97,15 @@ const Login = () => {
           Continue with Google
         </button>
 
-        <p className="mt-6 text-center text-black">
+        <p className="mt-6 text-center text-black text-sm">
           Don't have an account? <Link to="/signup" className="text-black font-semibold hover:underline">Sign up</Link>
         </p>
       </div>
 
       {/* Google Account Picker Modal */}
       {isGoogleModalOpen && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl border border-gray-100 p-6">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl border border-gray-100 p-5 sm:p-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div className="flex flex-col items-center mb-6">
               <svg viewBox="0 0 24 24" width="36" height="36" xmlns="http://www.w3.org/2000/svg" className="mb-3">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -130,6 +134,9 @@ const Login = () => {
                   <input 
                     type="email" 
                     required
+                    autoComplete="email"
+                    autoCapitalize="none"
+                    autoCorrect="off"
                     value={googleEmailInput}
                     onChange={e => setGoogleEmailInput(e.target.value)}
                     placeholder="Email or phone"
@@ -144,13 +151,13 @@ const Login = () => {
                   <button 
                     type="button"
                     onClick={() => setIsGoogleModalOpen(false)}
-                    className="text-sm font-bold text-gray-500 hover:text-gray-700"
+                    className="text-sm font-bold text-gray-500 hover:text-gray-700 cursor-pointer"
                   >
                     Cancel
                   </button>
                   <button 
                     type="submit"
-                    className="px-5 py-2.5 bg-[#4285F4] text-white font-bold rounded-lg text-sm hover:bg-[#357ae8] transition-all shadow-sm"
+                    className="px-5 py-2.5 bg-[#4285F4] text-white font-bold rounded-lg text-sm hover:bg-[#357ae8] transition-all shadow-sm cursor-pointer"
                   >
                     Next
                   </button>
