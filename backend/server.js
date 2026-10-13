@@ -70,6 +70,90 @@ app.use('/appointments', appointmentRoutes);
 app.use('/api/ats', atsRoutes);
 app.use('/ats', atsRoutes);
 
+const SITEMAP_XML = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+  <url>
+    <loc>https://careercraft.buzz/</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/ats-analyzer</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/ats-score</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/resume</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/skill-gap</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/companies</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/payment</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/chat</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/login</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://careercraft.buzz/signup</loc>
+    <lastmod>2026-10-13</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+  </url>
+</urlset>`;
+
+const ROBOTS_TXT = `User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://careercraft.buzz/sitemap.xml`;
+
+app.get(['/sitemap.xml', '/api/sitemap.xml'], (req, res) => {
+  res.setHeader('Content-Type', 'application/xml; charset=utf-8');
+  res.send(SITEMAP_XML);
+});
+
+app.get(['/robots.txt', '/api/robots.txt'], (req, res) => {
+  res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+  res.send(ROBOTS_TXT);
+});
+
 app.get(['/api/health', '/health', '/api', '/'], (req, res) => {
   res.json({ status: 'ok', message: 'AI Career Navigator API is running...' });
 });

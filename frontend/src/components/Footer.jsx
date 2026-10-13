@@ -22,9 +22,11 @@ const Footer = () => {
           <h4 className="text-lg font-black mb-6 uppercase tracking-wider">Platform</h4>
           <ul className="space-y-4 text-gray-400 font-medium">
             <li><Link to="/companies" className="hover:text-white transition-colors">Explore Companies</Link></li>
+            <li><Link to="/ats-analyzer" className="hover:text-white transition-colors">ATS Resume Score</Link></li>
             <li><Link to="/skill-gap" className="hover:text-white transition-colors">Skill Gap Analysis</Link></li>
             <li><Link to="/resume" className="hover:text-white transition-colors">Resume Builder</Link></li>
             <li><Link to="/chat" className="hover:text-white transition-colors">AI Career Coach</Link></li>
+            <li><a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">XML Sitemap</a></li>
           </ul>
         </div>
 
@@ -63,6 +65,7 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto border-t border-white/10 mt-12 md:mt-16 pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm font-bold text-center gap-4">
         <p>© {new Date().getFullYear()} AI Career Navigator. All rights reserved.</p>
         <div className="flex gap-8 uppercase tracking-widest">
+          <a href="/sitemap.xml" target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors text-[10px]">Sitemap</a>
           <a href="#" className="hover:text-white transition-colors text-[10px]">Privacy Policy</a>
           <a href="#" className="hover:text-white transition-colors text-[10px]">Terms of Service</a>
         </div>

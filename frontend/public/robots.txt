@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+
+# Google Search Console Sitemap
+Sitemap: https://careercraft.buzz/sitemap.xml
